@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>まなぶクエスト | 中学生向け勉強Webアプリ</title>
+  <meta name="description" content="中学生向けの勉強Webアプリ。5教科対応、学年別、学校別カリキュラム、ランキング、復習、ガチャ、LINE共有つき。" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <div class="app-shell">
+    <header class="topbar glass">
+      <div>
+        <div class="brand">まなぶクエスト</div>
+        <div class="subbrand">中学生向け勉強Webアプリ</div>
+      </div>
+      <button class="icon-btn" id="installBtn" hidden>＋追加</button>
+    </header>
+
+    <main id="app"></main>
+
+    <nav class="bottom-nav glass">
+      <button data-route="home" class="nav-btn active">ホーム</button>
+      <button data-route="study" class="nav-btn">学習</button>
+      <button data-route="review" class="nav-btn">復習</button>
+      <button data-route="ranking" class="nav-btn">順位</button>
+      <button data-route="store" class="nav-btn">ガチャ</button>
+    </nav>
+  </div>
+
+  <template id="home-template">
+    <section class="screen home-screen">
+      <div class="hero card glass">
+        <div class="hero-head">
+          <div>
+            <p class="eyebrow">毎日5分で積み上がる</p>
+            <h1>勉強を、<span>続けたくなる</span>ゲームへ。</h1>
+          </div>
+          <div class="avatar-badge">Lv<span id="homeLevel">1</span></div>
+        </div>
+        <div class="stats-grid">
+          <div class="mini card-dark"><span>🔥 連続</span><strong id="streakValue">0日</strong></div>
+          <div class="mini card-dark"><span>🪙 コイン</span><strong id="coinValue">0</strong></div>
+          <div class="mini card-dark"><span>⭐ XP</span><strong id="xpValue">0</strong></div>
+        </div>
+        <div class="mission card-dark">
+          <div>
+            <p class="eyebrow">今日のミッション</p>
+            <strong id="missionText">10問正解しよう</strong>
+          </div>
+          <span class="pill" id="missionProgress">0 / 10</span>
+        </div>
+        <div class="hero-actions">
+          <button class="primary-btn" id="startStudyBtn">今すぐ勉強する</button>
+          <button class="ghost-btn" id="shareBtn">LINEで共有</button>
+        </div>
+      </div>
+
+      <div class="grid two-up">
+        <article class="card glass">
+          <div class="card-title-row">
+            <h2>学習設定</h2>
+            <span class="pill blue">保存されます</span>
+          </div>
+          <label class="field-label">学年</label>
+          <div class="segmented" id="gradeChooser"></div>
+          <label class="field-label">学校タイプ</label>
+          <div class="segmented" id="schoolChooser"></div>
+          <label class="field-label">今日の単元</label>
+          <div class="chip-wrap" id="curriculumChips"></div>
+        </article>
+
+        <article class="card glass">
+          <div class="card-title-row">
+            <h2>教科を選ぶ</h2>
+            <span class="pill">5教科</span>
+          </div>
+          <div class="subject-grid" id="subjectGrid"></div>
+        </article>
+      </div>
+    </section>
+  </template>
+
+  <template id="study-template">
+    <section class="screen study-screen">
+      <div class="card glass quiz-header">
+        <div>
+          <p class="eyebrow" id="quizMeta">中1 / 英語</p>
+          <h2 id="quizUnitTitle">be動詞</h2>
+        </div>
+        <div class="pill blue" id="quizProgress">1 / 10</div>
+      </div>
+
+      <article class="card glass question-card">
+        <div class="pill" id="difficultyPill">標準</div>
+        <h3 id="questionText">問題がここに表示されます</h3>
+        <div id="questionOptions" class="options"></div>
+        <div id="feedbackBox" class="feedback-box hidden"></div>
+        <div class="study-actions">
+          <button class="ghost-btn hidden" id="nextQuestionBtn">次の問題へ</button>
+          <button class="primary-btn hidden" id="finishStudyBtn">結果を見る</button>
+        </div>
+      </article>
+    </section>
+  </template>
+
+  <template id="result-template">
+    <section class="screen result-screen">
+      <article class="card glass result-card">
+        <p class="eyebrow">学習結果</p>
+        <h2><span id="resultScore">0</span> / <span id="resultTotal">10</span></h2>
+        <div class="result-grid">
+          <div class="mini card-dark"><span>獲得XP</span><strong id="resultXp">0</strong></div>
+          <div class="mini card-dark"><span>獲得コイン</span><strong id="resultCoins">0</strong></div>
+          <div class="mini card-dark"><span>正答率</span><strong id="resultRate">0%</strong></div>
+        </div>
+        <div class="hero-actions">
+          <button class="primary-btn" id="retryBtn">もう一回</button>
+          <button class="ghost-btn" id="goHomeBtn">ホームへ戻る</button>
+        </div>
+      </article>
+    </section>
+  </template>
+
+  <template id="review-template">
+    <section class="screen review-screen">
+      <article class="card glass">
+        <div class="card-title-row">
+          <h2>間違えた問題</h2>
+          <span class="pill blue" id="reviewCountPill">0問</span>
+        </div>
+        <div id="reviewList" class="list"></div>
+      </article>
+    </section>
+  </template>
+
+  <template id="ranking-template">
+    <section class="screen ranking-screen">
+      <article class="card glass">
+        <div class="card-title-row">
+          <h2>ランキング</h2>
+          <span class="pill">ローカル保存</span>
+        </div>
+        <form id="rankingForm" class="inline-form">
+          <input type="text" id="playerName" maxlength="12" placeholder="名前を入力" />
+          <button type="submit" class="primary-btn compact">登録</button>
+        </form>
+        <div id="rankingList" class="list ranking-list"></div>
+      </article>
+    </section>
+  </template>
+
+  <template id="store-template">
+    <section class="screen store-screen">
+      <div class="grid two-up">
+        <article class="card glass">
+          <div class="card-title-row">
+            <h2>ガチャ</h2>
+            <span class="pill blue">100コイン</span>
+          </div>
+          <p class="muted">テーマや称号を解放できる演出つきガチャ。今はローカル版やから無料運用で試せる。</p>
+          <button class="primary-btn" id="rollGachaBtn">ガチャを引く</button>
+          <div id="gachaResult" class="gacha-result hidden"></div>
+        </article>
+
+        <article class="card glass">
+          <div class="card-title-row">
+            <h2>コレクション</h2>
+            <span class="pill" id="collectionCount">0種</span>
+          </div>
+          <div id="collectionList" class="chip-wrap"></div>
+        </article>
+      </div>
+    </section>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
